@@ -7,6 +7,8 @@ For example, one Task would be to run NGINX, Rest API, or a microservice inside 
 Technically Tasks aren't exactly like Containerized Processes but abstractions created by the Orchestrator
 to represent Containerized Processes. Why? Because they include metadata such as the state, resource limits,
 restart policies, and information on how they should be managed, monitored, and run by the Manager.
+
+As this Orchestrator uses Docker as its Container Runtime, Tasks run as Docker Containers.
 */
 
 package task
