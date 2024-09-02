@@ -31,7 +31,19 @@ If a Task fails, Workers must attempt to restart it.
 
 ### Manager
 
+The Manager is the brains of the Orchestrator. It **accepts requests coming from the user** (e.g., via the [CLI](#command-line-interface-cli-tool)) to start/stop [Tasks](#task).
+
+The Manager **uses the [Scheduler](#scheduler) as an advisor in determining the best [Worker](#worker) candidate to whom to schedule a Task to be run.**
+
+The Manager **puts Tasks into a FIFO (*First In First Out*) queue**.
+
+The Manager also **collects metrics and statistics from the Workers**, which are then utilized by the [Scheduler](#scheduler).
+
+The Manager will need to keep track of the Workers in the [Cluster](#cluster).
+
 ### Cluster
+
+### Command Line Interface (CLI) Tool
 
 ### In Kubernetes' Terms
 
