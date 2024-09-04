@@ -2,6 +2,9 @@
 
 A very minimalistic orchestrator based on the Docker runtime written in Go. Courtesy of Tim Boring's book "Build An Orchestrator In Go"
 
+Below is an overall architecture of the orchestrator:
+![Overall Architecture of the Orchestrator](/attachments/overall-architecture.png)
+
 ## The Components of An Orchestration System
 
 ### Task
@@ -17,6 +20,8 @@ restart policies, and information on how they should be managed, monitored, and 
 
 As this Orchestrator uses Docker as its Container Runtime, Tasks run as Docker Containers.
 
+![Process of Task States](/attachments/task-states.png)
+
 ### Worker
 
 Workers are the muscles of an Orchestrator. **Tasks are assigned by the Manager to run as containers inside Workers.**
@@ -25,9 +30,28 @@ If a Task fails, Workers must attempt to restart it.
 
 **Workers also make metrics and statistics about its Tasks available to the Manager** for the purpose of Scheduling.
 
+Workers deal with the logical workload (the [Tasks](#task)) of the Orchestrator. Workers are a type of [Node](#node)
+
+### Node
+
+A node is an object that represents any machine in the [Cluster](#cluster). Types of nodes, for example:
+
+- The [Manager](#manager)
+- A [Worker](#worker)
+
+While Workers handle the logical workload, **Nodes are either physical or virtual machines.**
+
 ### Job
 
 ### Scheduler
+
+The Scheduler is an advisor to the [Manager](#manager) providing it the following information:
+
+1. Determines a set of candidate [Workers](#worker) on which a [Task](#task) could run.
+2. **Scores the preceding candidates by using a scheduling algorithm.**
+3. Picks the candidate with the best score.
+
+There can be different kinds of schedulers, which is the main reason why **the Scheduler is implemented as an Interface type.**
 
 ### Manager
 
@@ -53,9 +77,44 @@ The Manager will need to keep track of the Workers in the [Cluster](#cluster).
 
 The [Scheduler](#scheduler) and [Cluster](#cluster) are idiomatic and identical for Kubernetes without any differences.
 
-## Go Learnings
+## Go (and Other) Lessons Learned
 
 Insights I've learned related to either Go or programming in general.
+
+### UUID
+
+UUIDs are Universally Unique IDentifiers. **They are 128-bits and, in practice, unique.** They follow a specific structure and a set of rules defined by [RFC 9562](https://datatracker.ietf.org/doc/html/rfc9562), which displaced the previous RFC 4122.
+
+In theory, however, there's the possibility of two identical UUIDs being generated but that probability is extremely low.
+
+### Interfaces
+
+**Interfaces in Go support [Polymorphism](https://www.techtarget.com/whatis/definition/polymorphism).** This means that a type, which implements the interface type, can be used wherever the interface type is expected.
+
+**They also define methods a type must implement to be considered an interface type.**
+
+See more at Effective Go: [Interfaces and Other Types](https://go.dev/doc/effective_go#interfaces_and_types)
+
+### In-Memory Databases (IMDBs)
+
+In Go we can create a quick and simple key-value In-Memory Database by using the `Map` type. Map declarations usually look like this `map[KeyType]ValueType`.
+
+- See [Go Maps In Action](https://go.dev/blog/maps).
+
+So, we could create a simple In-Memory Database for the Worker struct:
+
+```go
+type Worker struct {
+  ...
+  Db        map[uuid.UUID]*task.Task
+}
+```
+
+The keys will be of type `uuid.UUID` and the values of type `*task.Task` (*i.e., pointers to Tasks*).
+
+**For a more sophisticated IMDB, consider [bbolt](https://github.com/etcd-io/bbolt), which is an embedded key-value Database for Go with features such as Disk Persistence.**
+
+See more at Wikipedia: [In-Memory Database](https://en.wikipedia.org/wiki/In-memory_database)
 
 ### Iota
 
@@ -73,21 +132,28 @@ const (
 
 See more at the Go wiki: [Iota](https://go.dev/wiki/Iota).
 
-### In-Memory Databases (IMDBs)
+### `make`
 
-In Go we can create a quick and simple key-value In-Memory Database by using the `Map` type. Map declarations usually look like this `map[KeyType]ValueType`.
+The `make` built-in function seems to be very useful in Go. It can return an initialized object of type Map, Slice, or Channel.
 
-So, we could create a simple In-Memory Database for the Worker struct:
+- Make is useful for data structures that require Runtime Initialization.
+
+Unlike `new`, `make`'s return type is EXACTLY the same as the type of its argument, not a pointer to it. Also, `new` returns a zeroed value of a given type, which is useful for data types like `struct`s.
+
+For example:
 
 ```go
-type Worker struct {
-  ...
-  Db        map[uuid.UUID]*task.Task
-}
+  m := manager.Manager{
+    ...
+    TaskDb:  make(map[string][]*task.Task),
+    EventDb: make(map[string][]*task.TaskEvent),
+  }
 ```
 
-The keys will be of type `uuid.UUID` and the values of type `*task.Task` (*i.e., pointers to Tasks*).
+Read more: [The new() vs make() Functions in Go – When to Use Each One](https://www.freecodecamp.org/news/new-vs-make-functions-in-go/)
 
-**For a more sophisticated IMDB, consider [bbolt](https://github.com/etcd-io/bbolt), which is an embedded key-value Database for Go with features such as Disk Persistence.**
+### Pointers and Dereferences
 
-See more at Wikipedia: [In-Memory Database](https://en.wikipedia.org/wiki/In-memory_database)
+- Pointers (e.g., `*Queue`) are values to memory addresses.
+- Dereferences (e.g. `**Queue`) expose the actual value of the Pointer's memory address (*i.e., the data*).
+- Ampersands (e.g., `&x`, where `x := 10`) are used to get the memory address of a variable. In other words, they create Pointers.
