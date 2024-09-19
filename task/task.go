@@ -76,6 +76,14 @@ type DockerResult struct {
 	Result      string
 }
 
+/*
+Runs a container by the following process:
+ 1. Pulls a desired image
+ 2. Configuring the container (e.g., settings a Restart Policy)
+ 3. Creates and starts the container
+ 4. Prints its logs to the terminal
+ 5. Returns a wrapped result.
+*/
 func (d *Docker) Run() DockerResult {
 	// Context is a Go package that is utilized to manage deadlines, cancellation signals,
 	// and other request-scoped values across API boundaries and between processes.
@@ -151,7 +159,8 @@ func (d *Docker) Run() DockerResult {
 	return DockerResult{ContainerId: resp.ID, Action: "start", Result: "success"}
 }
 
-func (d *Docker) Stop(id string) DockerResult {
+// Stops and removes a container using its ID.
+func (d *Docker) StopAndRemove(id string) DockerResult {
 	log.Printf("Attempting to stop container %v", id)
 	ctx := context.Background()
 
@@ -162,7 +171,7 @@ func (d *Docker) Stop(id string) DockerResult {
 		return DockerResult{Error: err}
 	}
 
-	// If stopping is successful, try to remove the container using its ID:
+	// If stopping is successful, try to kill and remove the container using its ID from the host machine:
 	err = d.Client.ContainerRemove(ctx, id, container.RemoveOptions{
 		RemoveVolumes: true,
 		RemoveLinks:   false,
