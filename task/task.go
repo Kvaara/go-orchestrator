@@ -16,23 +16,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type State int
-
-const (
-	Pending State = iota
-	Scheduled
-	Running
-	Completed
-	Failed
-)
-
 type Task struct {
 	ID            uuid.UUID
+	ContainerID   string
 	Name          string
 	State         State
 	Image         string
-	Memory        int
-	Disk          int
+	Cpu           float64
+	Memory        int64
+	Disk          int64
 	ExposedPorts  nat.PortSet
 	PortBindings  map[string]string
 	RestartPolicy string
@@ -61,6 +53,28 @@ type Config struct {
 	Disk          int64    // Used by the Scheduler to find a node capable of running a Task
 	Env           []string // Utilized to inject environment variables into containers.
 	RestartPolicy string   // empty string, `always`, `unless-stopped`, or `on-failure`.
+}
+
+// Helper function for returning a copy of a Task's Config.
+func NewConfig(t *Task) *Config {
+	return &Config{
+		Name:          t.Name,
+		ExposedPorts:  t.ExposedPorts,
+		Image:         t.Image,
+		Cpu:           t.Cpu,
+		Memory:        t.Memory,
+		Disk:          t.Disk,
+		RestartPolicy: t.RestartPolicy,
+	}
+}
+
+// A helper function for returning a new Docker management object with a new desired Config.
+func NewDocker(c *Config) *Docker {
+	dc, _ := client.NewClientWithOpts(client.FromEnv)
+	return &Docker{
+		Client: dc,
+		Config: *c,
+	}
 }
 
 type Docker struct {
