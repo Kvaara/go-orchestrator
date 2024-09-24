@@ -12,8 +12,10 @@ import (
 )
 
 type Worker struct {
-	Name      string
-	Queue     queue.Queue
+	Name  string
+	Queue queue.Queue
+	// This is an In-Memory DB (IMDB) so naturally the DB will reset across Worker restarts
+	// This IDMB will be replaced by an embedded key-value DB called bbolt.
 	Db        map[uuid.UUID]*task.Task
 	TaskCount int
 }
