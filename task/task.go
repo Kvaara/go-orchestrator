@@ -18,7 +18,7 @@ import (
 
 type Task struct {
 	ID            uuid.UUID
-	ContainerID   string
+	ContainerID   string // This is needed because of a 1-to-1 relationship between a Task and a container.
 	Name          string
 	State         State
 	Image         string
