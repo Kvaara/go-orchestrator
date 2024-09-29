@@ -4,10 +4,10 @@ This is a very basic Finite State Machine (FSM) that can be in exactly one of fi
 
 More specifically, this is a Deterministic Finite Automaton (DFA) and not a Nondeterministic Finite Automaton (NFA),
 because:
-1. These is exactly one transition into the next state
+1. There is exactly one transition into the next state
 2. There are no ambiguities or multiple choices for state transitions.
 
-- DFA: the same input corresponds to the same output (unambuguity)
+- DFA: the same input corresponds to the same output (unambiguity)
 - NFA: the same input could correspond to multiple different outputs (ambiguity)
 */
 
