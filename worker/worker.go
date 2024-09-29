@@ -101,3 +101,14 @@ func (w *Worker) StopTask(t task.Task) task.DockerResult {
 func (w *Worker) AddTaskToQueue(t task.Task) {
 	w.Queue.Enqueue(t)
 }
+
+// Showcases how to iterate through maps to add their values to a slice.
+func (w *Worker) GetTasksInDB() []*task.Task {
+	// Using preallocated slices via make() is more efficient than using empty slice literals such as
+	// tasks := []*task.Task{}
+	tasks := make([]*task.Task, 0, len(w.Db))
+	for _, t := range w.Db {
+		tasks = append(tasks, t)
+	}
+	return tasks
+}
