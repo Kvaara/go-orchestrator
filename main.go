@@ -26,11 +26,15 @@ func main() {
 	}
 	api := worker.Api{Address: host, Port: port, Worker: &w}
 
-	api.ServeAPI()
-
 	// The `go` keyword is used to create Goroutines (i.e., threads) to handle concurrent operations.
 	// This means that the below loop is nonblocking and moves on to the next statement.
 	go runTasks(&w)
+
+	go api.ServeAPI()
+
+	// This is a common idiom to insert blocks. A select blocks until one of its `case`s can be run.
+	// An empty select block works as an eternal block ensuring that the main function never returns so the Go application never stops
+	select {}
 }
 
 func runTasks(w *worker.Worker) {

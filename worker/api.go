@@ -46,5 +46,6 @@ func (a *Api) initRouter() {
 func (a *Api) ServeAPI() {
 	a.initRouter()
 	log.Printf("Listening on %s:%d", a.Address, a.Port)
+	// This is a blocking call meaning that it blocks post statements from executing
 	http.ListenAndServe(fmt.Sprintf("%s:%d", a.Address, a.Port), a.Router)
 }
